@@ -1,37 +1,30 @@
-#include <Arduino.h>
-#include <LiquidCrystal_I2C.h>
+#include "AudioTools.h"
+#include "AudioTools/AudioCodecs/CodecMP3Helix.h"
+#include "audio.h"
 
-#define TRIG GPIO_NUM_27
-#define ECHO GPIO_NUM_26
-#define SCL GPIO_NUM_22
-#define SDA GPIO_NUM_21
+AudioInfo info(44100, 2, 16); // sampling rate, # channels, bits per sample
+I2SStream i2s; // transmits audio data
+MemoryStream data(audio, length); // mp3 data source
+MP3DecoderHelix codec; // mp3 decoder
+EncodedAudioStream decoder(&i2s, &codec); // decoding stream
+StreamCopy copier(decoder, data); // copy in to out
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-double duration;
-double distance;
-
-void setup()
+void setup(void)
 {
-  lcd.init();
-  lcd.backlight();
-  pinMode(TRIG, OUTPUT);
-  pinMode(ECHO, INPUT);
+  // setup I2S
+  auto config = i2s.defaultConfig(TX_MODE);
+  config.copyFrom(info);
+  config.pin_bck = 26;
+  config.pin_data = 22;
+  config.pin_ws = 25;
+  i2s.begin(config);
+
+  // setup I2S based on sampling rate
+  decoder.begin();
 }
 
 void loop()
 {
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(2);
-
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
-
-  duration = pulseIn(ECHO, HIGH);
-  distance = 0.034 * duration / 2;
-  
-  lcd.clear();
-  lcd.print(distance);
-  delay(1000);
+  // copy sound to output stream
+  copier.copy();
 }
