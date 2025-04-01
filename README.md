@@ -5,6 +5,7 @@ IoT door sensor that uses two ESP32 dev boards and an ultrasonic sensor to detec
 # Libraries
 - https://github.com/pschatzmann/arduino-audio-tools
 - https://github.com/pschatzmann/arduino-libhelix
+- https://github.com/johnrickman/LiquidCrystal_I2C
 <br><br>
 
 # Hardware
